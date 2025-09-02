@@ -1,0 +1,155 @@
+-- Gui de Áudio Preto e Branco (Mobile + Todos Players Ouvem)
+-- Feito por ChatGPT 🚀
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Lista de Áudios Prontos
+local audios = {
+    {Name = "Yamete Kudasai", ID = 108494476595033},
+    {Name = "Gritinho", ID = 5710016194},
+    {Name = "Jumpscare Horroroso", ID = 85435253347146},
+    {Name = "Áudio Alto", ID = 6855150757},
+    {Name = "Ruído", ID = 120034877160791},
+    {Name = "Jumpscare 2", ID = 110637995610528},
+    {Name = "Risada Da Bruxa Minecraft", ID = 116214940486087},
+    {Name = "The Boiled One", ID = 137177653817621},
+    {Name = "Deitei Um Ave Maria Doido", ID = 128669424001766},
+    {Name = "Mandrake Detected", ID = 9068077052},
+    {Name = "amongus", ID = 6651571134},
+    {Name = "Sus", ID = 6701126635},
+    {Name = "Sonic.exe", ID = 2496367477},
+    {Name = "John's Laugh", ID = 130759239},
+    {Name = "Estora tímpano", ID = 268116333},
+}
+
+local selectedAudioID
+
+-- Função para tocar áudio no server (todos players)
+local function PlayServerAudio(ID)
+    if type(ID) ~= "number" then return end
+    local ev = ReplicatedStorage:FindFirstChild("RE")
+    if ev and ev:FindFirstChild("1Gu1nSound1s") then
+        ev["1Gu1nSound1s"]:FireServer(workspace, ID, 1)
+    end
+end
+
+-- Função para tocar áudio no seu client (você também ouve)
+local function PlayLocalAudio(ID)
+    if type(ID) ~= "number" then return end
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://" .. ID
+    sound.Volume = 1
+    sound.Parent = LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or LocalPlayer.Character:WaitForChild("Head")
+    sound:Play()
+    sound.Ended:Connect(function()
+        sound:Destroy()
+    end)
+end
+
+-- Função completa (server + client)
+local function PlayAudio(ID)
+    PlayServerAudio(ID) -- todos players
+    PlayLocalAudio(ID)  -- você também
+end
+
+-- Criar GUI
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "AudioGui"
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 300, 0, 400)
+Frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderSizePixel = 2
+Frame.Active = true
+Frame.Draggable = true
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Text = "🎵 Painel de Áudios"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+
+-- TextBox para IDs
+local TextBox = Instance.new("TextBox", Frame)
+TextBox.PlaceholderText = "Digite o ID do Áudio"
+TextBox.Size = UDim2.new(1, -20, 0, 30)
+TextBox.Position = UDim2.new(0, 10, 0, 50)
+TextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 14
+
+local TocarID = Instance.new("TextButton", Frame)
+TocarID.Text = "▶ Tocar ID"
+TocarID.Size = UDim2.new(1, -20, 0, 30)
+TocarID.Position = UDim2.new(0, 10, 0, 90)
+TocarID.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TocarID.TextColor3 = Color3.fromRGB(255, 255, 255)
+TocarID.Font = Enum.Font.GothamBold
+TocarID.TextSize = 14
+TocarID.MouseButton1Click:Connect(function()
+    local id = tonumber(TextBox.Text)
+    if id then
+        selectedAudioID = id
+        PlayAudio(selectedAudioID)
+    end
+end)
+
+-- ScrollingFrame para lista de áudios
+local Scrolling = Instance.new("ScrollingFrame", Frame)
+Scrolling.Size = UDim2.new(1, -20, 0, 250)
+Scrolling.Position = UDim2.new(0, 10, 0, 130)
+Scrolling.CanvasSize = UDim2.new(0, 0, 0, #audios * 35)
+Scrolling.ScrollBarThickness = 6
+Scrolling.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+
+local UIListLayout = Instance.new("UIListLayout", Scrolling)
+UIListLayout.Padding = UDim.new(0, 5)
+
+for _, audio in ipairs(audios) do
+    local btn = Instance.new("TextButton", Scrolling)
+    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.Text = "▶ " .. audio.Name
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.MouseButton1Click:Connect(function()
+        selectedAudioID = audio.ID
+        PlayAudio(selectedAudioID)
+    end)
+end
+
+-- Toggle de Loop
+local LoopBtn = Instance.new("TextButton", Frame)
+LoopBtn.Text = "🔁 Loop OFF"
+LoopBtn.Size = UDim2.new(1, -20, 0, 30)
+LoopBtn.Position = UDim2.new(0, 10, 1, -40)
+LoopBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+LoopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoopBtn.Font = Enum.Font.GothamBold
+LoopBtn.TextSize = 14
+
+local looping = false
+LoopBtn.MouseButton1Click:Connect(function()
+    looping = not looping
+    LoopBtn.Text = looping and "🔁 Loop ON" or "🔁 Loop OFF"
+    if looping then
+        task.spawn(function()
+            while looping do
+                if selectedAudioID then
+                    PlayAudio(selectedAudioID)
+                end
+                task.wait(1.5)
+            end
+        end)
+    end
+end)
